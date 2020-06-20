@@ -10,7 +10,9 @@ module.exports = app => {
     const config = await context.config('dco.yml', {
       require: {
         members: true
-      }
+      },
+      description_ok: "All commits are signed off!",
+      description_fail: "",
     })
     const requireForMembers = config.require.members
 
@@ -35,7 +37,7 @@ module.exports = app => {
         completed_at: new Date(),
         output: {
           title: 'DCO',
-          summary: 'All commits are signed off!'
+          summary: config.description_ok
         }
       }))
         .catch(function checkFails (error) {
@@ -58,8 +60,8 @@ module.exports = app => {
         summary.push(`Commit sha: [${commit.sha.substr(0, 7)}](${commit.url}), Author: ${commit.author}, Committer: ${commit.committer}; ${commit.message}`)
       })
       summary = summary.join('\n')
-      if (dcoFailed.length === 1) summary = handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
-      else summary = handleMultipleCommits(pr, commits.length, dcoFailed) + `\n\n${summary}`
+      if (dcoFailed.length === 1) summary = config.description_fail + handleOneCommit(pr, dcoFailed) + `\n\n${summary}`
+      else summary = config.description_fail + handleMultipleCommits(pr, commits.length, dcoFailed) + `\n\n${summary}`
 
       context.github.checks.create(context.repo({
         name: 'DCO',
